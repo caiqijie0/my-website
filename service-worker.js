@@ -4,8 +4,7 @@ const urlsToCache = [
     '/my-website/index.html',
     '/my-website/style.css',
     '/my-website/script.js',
-    '/my-website/icons/icon-192x192.png',
-    '/my-website/icons/icon-512x512.png'
+    '/my-website/icon.svg'
 ];
 
 // 安装时缓存资源

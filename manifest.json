@@ -2,15 +2,15 @@
     "name": "我的个人主页",
     "short_name": "MySite",
     "description": "我的个人展示网站",
-    "start_url": "/my-website/",
+    "start_url": "https://caiqijie0.github.io/my-website/",
     "display": "standalone",
     "background_color": "#ffffff",
     "theme_color": "#667eea",
     "orientation": "portrait",
-    "scope": "/my-website/",
+    "scope": "https://caiqijie0.github.io/my-website/",
     "icons": [
         {
-            "src": "icon.svg",
+            "src": "https://caiqijie0.github.io/my-website/icon.svg",
             "sizes": "72x72 96x96 128x128 144x144 152x152 192x192 384x384 512x512",
             "type": "image/svg+xml",
             "purpose": "any maskable"

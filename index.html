@@ -1,101 +1,380 @@
 <!DOCTYPE html>
-<html lang="zh-CN">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="theme-color" content="#667eea">
-    <meta name="description" content="我的个人展示网站">
-    <title>我的个人主页</title>
-    <link rel="stylesheet" href="style.css">
-    <link rel="manifest" href="manifest.json">
-    <link rel="icon" type="image/svg+xml" href="icon.svg">
-    <link rel="apple-touch-icon" href="icon.svg">
+    <title>FCNES</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/style 1.css">
+    <style>
+        #nesCanvas {
+            width: 566px;
+            height: 484px;
+            image-rendering: pixelated;
+            image-rendering: crisp-edges;
+        }
+    </style>
 </head>
 <body>
-    <header>
-        <nav>
-            <div class="logo">MySite</div>
-            <ul class="nav-links">
-                <li><a href="#home">首页</a></li>
-                <li><a href="#about">关于</a></li>
-                <li><a href="#projects">项目</a></li>
-                <li><a href="#contact">联系</a></li>
-            </ul>
-        </nav>
-    </header>
-
-    <main>
-        <section id="home" class="hero">
-            <div class="hero-content">
-                <h1>欢迎来到我的网站</h1>
-                <p>这是一个托管在 GitHub Pages 上的静态网站</p>
-                <a href="#about" class="btn">了解更多</a>
+    <div class="main-content">
+        <div class="content-row">
+            <div class="canvas-container">
+                <canvas id="nesCanvas" width="283" height="242"></canvas>
             </div>
-        </section>
+        </div>
 
-        <section id="about" class="about">
-            <div class="container">
-                <h2>关于我</h2>
-                <p>你好！我是一名热爱编程的开发者。这个网站是我的个人展示页面。</p>
-                <div class="skills">
-                    <span class="skill-tag">HTML</span>
-                    <span class="skill-tag">CSS</span>
-                    <span class="skill-tag">JavaScript</span>
+        <!-- 重置按钮单独显示 -->
+        <div style="text-align: center; margin: 10px 0;">
+            <button class="btn btn-danger" onclick="reset()">重置</button>
+        </div>
+
+        <div class="main-controls" style="display: none;">
+            <div class="control-section">
+                <h4>ROM控制</h4>
+                <button id="loadRomBtn" class="btn btn-primary">载入rom</button>
+                <input type="file" id="romFile" accept=".nes">
+            </div>
+
+            <div class="control-section" style="display: none;">
+                <h4>控制</h4>
+                <button class="btn btn-danger" onclick="reset()">重置</button>
+            </div>
+
+            <div class="control-section">
+                <h4>帧率</h4>
+                <button class="btn btn-fps" id="fps45Btn" onclick="setTargetFps(45)">45 FPS</button>
+                <button class="btn btn-fps active" id="fps55Btn" onclick="setTargetFps(55)">55 FPS</button>
+                <button class="btn btn-fps" id="fps60Btn" onclick="setTargetFps(60)">60 FPS</button>
+            </div>
+
+            <div class="control-section audio-controls">
+                <h4>音频通道</h4>
+                <div class="channel-list">
+                    <label class="channel-item">
+                        <input type="checkbox" id="channel-square1" checked>
+                        <span class="checkmark"></span>
+                        <span class="channel-name">Square 1</span>
+                    </label>
+                    <label class="channel-item">
+                        <input type="checkbox" id="channel-square2" checked>
+                        <span class="checkmark"></span>
+                        <span class="channel-name">Square 2</span>
+                    </label>
+                    <label class="channel-item">
+                        <input type="checkbox" id="channel-triangle" checked>
+                        <span class="checkmark"></span>
+                        <span class="channel-name">Triangle</span>
+                    </label>
+                    <label class="channel-item">
+                        <input type="checkbox" id="channel-noise" checked>
+                        <span class="checkmark"></span>
+                        <span class="channel-name">Noise</span>
+                    </label>
+                    <label class="channel-item">
+                        <input type="checkbox" id="channel-dmc" checked>
+                        <span class="checkmark"></span>
+                        <span class="channel-name">DMC</span>
+                    </label>
                 </div>
             </div>
-        </section>
 
-        <section id="projects" class="projects">
-            <div class="container">
-                <h2>我的项目</h2>
-                <div class="project-grid">
-                    <div class="project-card">
-                        <h3>项目一</h3>
-                        <p>这是一个示例项目描述</p>
+            <div class="control-section square-features">
+                <h4>Square 特殊功能</h4>
+                <div class="feature-group">
+                    <label class="channel-item">
+                        <input type="checkbox" id="sweep-enable" checked>
+                        <span class="checkmark"></span>
+                        <span class="channel-name">Sweep 扫频</span>
+                    </label>
+                    <label class="channel-item">
+                        <input type="checkbox" id="envelope-enable" checked>
+                        <span class="checkmark"></span>
+                        <span class="channel-name">Envelope 包络</span>
+                    </label>
+                    <label class="channel-item">
+                        <input type="checkbox" id="length-enable" checked>
+                        <span class="checkmark"></span>
+                        <span class="channel-name">Length Counter</span>
+                    </label>
+                </div>
+                <div class="feature-info" style="font-size: 11px; color: #888; margin-top: 8px; line-height: 1.4;">
+                    关闭功能后 Square 将保持固定音高/音量/无限持续
+                </div>
+            </div>
+
+            <div class="control-section instrument-controls">
+                <h4>乐器音效 <button id="toggle-all-instruments" class="toggle-all-btn">全部关闭</button></h4>
+                <div class="instrument-list">
+                    <div class="instrument-item">
+                        <span class="instrument-name">Square 1</span>
+                        <select id="instrument-pulse1" class="instrument-select">
+                            <option value="nes" selected>NES原声</option>
+                            <option value="pulse1_flute">长笛</option>
+                            <option value="pulse1_piano">钢琴</option>
+                            <option value="pulse1_trumpet">小号</option>
+                            <option value="pulse1_saxophone">萨克斯</option>
+                            <option value="pulse1_snare">军鼓</option>
+                            <option value="pulse1_dongxiao">洞箫</option>
+                            <option value="pulse1_guzheng">古筝</option>
+                            <option value="pulse1_suona">唢呐</option>
+                            <option value="pulse1_erhu">二胡</option>
+                            <option value="pulse1_daluo">大锣</option>
+                            <option value="pulse1_shakuhachi">尺八</option>
+                            <option value="pulse1_koto">十三弦筝</option>
+                            <option value="pulse1_shamisen">津轻三味线</option>
+                            <option value="pulse1_biwa">萨摩琵琶</option>
+                            <option value="pulse1_taiko">太鼓</option>
+                        </select>
+                        <select id="waveform-pulse1" class="waveform-select">
+                            <option value="default" selected>默认波形</option>
+                            <option value="sine">正弦波 - 干净温柔</option>
+                            <option value="triangle">三角波 - 可爱轻快</option>
+                            <option value="square">方波 - 复古游戏</option>
+                            <option value="sawtooth">锯齿波 - 激情饱满</option>
+                            <option value="noise">噪声 - 鼓/特效</option>
+                        </select>
+                        <label class="mix-checkbox-label">
+                            <input type="checkbox" id="mix-pulse1" class="mix-checkbox">
+                            <span>混合</span>
+                        </label>
+                        <div class="mix-volume-control" id="mix-volume-pulse1-container">
+                            <span class="mix-volume-label">NES比例</span>
+                            <input type="range" id="mix-volume-pulse1" class="mix-volume-slider" min="0" max="100" value="70">
+                            <span class="mix-volume-value" id="mix-volume-pulse1-value">70%</span>
+                        </div>
+                        <div class="octave-control">
+                            <span class="octave-label">八度</span>
+                            <select id="octave-pulse1" class="octave-select">
+                                <option value="-2">-2</option>
+                                <option value="-1">-1</option>
+                                <option value="0" selected>0</option>
+                                <option value="1">+1</option>
+                                <option value="2">+2</option>
+                            </select>
+                        </div>
+                        <div class="instrument-volume-control">
+                            <span class="instrument-volume-label">音量</span>
+                            <input type="range" id="instrument-volume-pulse1" class="instrument-volume-slider" min="0" max="100" value="100">
+                            <span class="instrument-volume-value" id="instrument-volume-pulse1-value">100%</span>
+                        </div>
                     </div>
-                    <div class="project-card">
-                        <h3>项目二</h3>
-                        <p>这是另一个示例项目描述</p>
+                    <div class="instrument-item">
+                        <span class="instrument-name">Square 2</span>
+                        <select id="instrument-pulse2" class="instrument-select">
+                            <option value="nes" selected>NES原声</option>
+                            <option value="pulse2_flute">长笛</option>
+                            <option value="pulse2_piano">钢琴</option>
+                            <option value="pulse2_trumpet">小号</option>
+                            <option value="pulse2_saxophone">萨克斯</option>
+                            <option value="pulse2_snare">军鼓</option>
+                            <option value="pulse2_dongxiao">洞箫</option>
+                            <option value="pulse2_guzheng">古筝</option>
+                            <option value="pulse2_suona">唢呐</option>
+                            <option value="pulse2_erhu">二胡</option>
+                            <option value="pulse2_daluo">大锣</option>
+                            <option value="pulse2_shakuhachi">尺八</option>
+                            <option value="pulse2_koto">十三弦筝</option>
+                            <option value="pulse2_shamisen">津轻三味线</option>
+                            <option value="pulse2_biwa">萨摩琵琶</option>
+                            <option value="pulse2_taiko">太鼓</option>
+                        </select>
+                        <select id="waveform-pulse2" class="waveform-select">
+                            <option value="default" selected>默认波形</option>
+                            <option value="sine">正弦波 - 干净温柔</option>
+                            <option value="triangle">三角波 - 可爱轻快</option>
+                            <option value="square">方波 - 复古游戏</option>
+                            <option value="sawtooth">锯齿波 - 激情饱满</option>
+                            <option value="noise">噪声 - 鼓/特效</option>
+                        </select>
+                        <label class="mix-checkbox-label">
+                            <input type="checkbox" id="mix-pulse2" class="mix-checkbox">
+                            <span>混合</span>
+                        </label>
+                        <div class="mix-volume-control" id="mix-volume-pulse2-container">
+                            <span class="mix-volume-label">NES比例</span>
+                            <input type="range" id="mix-volume-pulse2" class="mix-volume-slider" min="0" max="100" value="70">
+                            <span class="mix-volume-value" id="mix-volume-pulse2-value">70%</span>
+                        </div>
+                        <div class="octave-control">
+                            <span class="octave-label">八度</span>
+                            <select id="octave-pulse2" class="octave-select">
+                                <option value="-2">-2</option>
+                                <option value="-1">-1</option>
+                                <option value="0" selected>0</option>
+                                <option value="1">+1</option>
+                                <option value="2">+2</option>
+                            </select>
+                        </div>
+                        <div class="instrument-volume-control">
+                            <span class="instrument-volume-label">音量</span>
+                            <input type="range" id="instrument-volume-pulse2" class="instrument-volume-slider" min="0" max="100" value="100">
+                            <span class="instrument-volume-value" id="instrument-volume-pulse2-value">100%</span>
+                        </div>
                     </div>
-                    <div class="project-card">
-                        <h3>项目三</h3>
-                        <p>更多项目敬请期待</p>
+                    <div class="instrument-item">
+                        <span class="instrument-name">Triangle</span>
+                        <select id="instrument-triangle" class="instrument-select">
+                            <option value="nes" selected>NES原声</option>
+                            <option value="triangle_flute">长笛</option>
+                            <option value="triangle_piano">钢琴</option>
+                            <option value="triangle_trumpet">小号</option>
+                            <option value="triangle_saxophone">萨克斯</option>
+                            <option value="triangle_snare">军鼓</option>
+                            <option value="triangle_dongxiao">洞箫</option>
+                            <option value="triangle_guzheng">古筝</option>
+                            <option value="triangle_suona">唢呐</option>
+                            <option value="triangle_erhu">二胡</option>
+                            <option value="triangle_daluo">大锣</option>
+                            <option value="triangle_shakuhachi">尺八</option>
+                            <option value="triangle_koto">十三弦筝</option>
+                            <option value="triangle_shamisen">津轻三味线</option>
+                            <option value="triangle_biwa">萨摩琵琶</option>
+                            <option value="triangle_taiko">太鼓</option>
+                        </select>
+                        <select id="waveform-triangle" class="waveform-select">
+                            <option value="default" selected>默认波形</option>
+                            <option value="sine">正弦波 - 干净温柔</option>
+                            <option value="triangle">三角波 - 可爱轻快</option>
+                            <option value="square">方波 - 复古游戏</option>
+                            <option value="sawtooth">锯齿波 - 激情饱满</option>
+                            <option value="noise">噪声 - 鼓/特效</option>
+                        </select>
+                        <label class="mix-checkbox-label">
+                            <input type="checkbox" id="mix-triangle" class="mix-checkbox">
+                            <span>混合</span>
+                        </label>
+                        <div class="mix-volume-control" id="mix-volume-triangle-container">
+                            <span class="mix-volume-label">NES比例</span>
+                            <input type="range" id="mix-volume-triangle" class="mix-volume-slider" min="0" max="100" value="70">
+                            <span class="mix-volume-value" id="mix-volume-triangle-value">70%</span>
+                        </div>
+                        <div class="octave-control">
+                            <span class="octave-label">八度</span>
+                            <select id="octave-triangle" class="octave-select">
+                                <option value="-2">-2</option>
+                                <option value="-1">-1</option>
+                                <option value="0" selected>0</option>
+                                <option value="1">+1</option>
+                                <option value="2">+2</option>
+                            </select>
+                        </div>
+                        <div class="instrument-volume-control">
+                            <span class="instrument-volume-label">音量</span>
+                            <input type="range" id="instrument-volume-triangle" class="instrument-volume-slider" min="0" max="100" value="100">
+                            <span class="instrument-volume-value" id="instrument-volume-triangle-value">100%</span>
+                        </div>
+                    </div>
+                    <div class="instrument-item">
+                        <span class="instrument-name">Noise</span>
+                        <select id="instrument-noise" class="instrument-select">
+                            <option value="nes" selected>NES原声</option>
+                            <option value="noise_flute">长笛</option>
+                            <option value="noise_piano">钢琴</option>
+                            <option value="noise_trumpet">小号</option>
+                            <option value="noise_saxophone">萨克斯</option>
+                            <option value="noise_snare">军鼓</option>
+                            <option value="noise_dongxiao">洞箫</option>
+                            <option value="noise_guzheng">古筝</option>
+                            <option value="noise_suona">唢呐</option>
+                            <option value="noise_erhu">二胡</option>
+                            <option value="noise_daluo">大锣</option>
+                            <option value="noise_shakuhachi">尺八</option>
+                            <option value="noise_koto">十三弦筝</option>
+                            <option value="noise_shamisen">津轻三味线</option>
+                            <option value="noise_biwa">萨摩琵琶</option>
+                            <option value="noise_taiko">太鼓</option>
+                        </select>
+                        <select id="waveform-noise" class="waveform-select">
+                            <option value="default" selected>默认波形</option>
+                            <option value="sine">正弦波 - 干净温柔</option>
+                            <option value="triangle">三角波 - 可爱轻快</option>
+                            <option value="square">方波 - 复古游戏</option>
+                            <option value="sawtooth">锯齿波 - 激情饱满</option>
+                            <option value="noise">噪声 - 鼓/特效</option>
+                        </select>
+                        <label class="mix-checkbox-label">
+                            <input type="checkbox" id="mix-noise" class="mix-checkbox">
+                            <span>混合</span>
+                        </label>
+                        <div class="mix-volume-control" id="mix-volume-noise-container">
+                            <span class="mix-volume-label">NES比例</span>
+                            <input type="range" id="mix-volume-noise" class="mix-volume-slider" min="0" max="100" value="70">
+                            <span class="mix-volume-value" id="mix-volume-noise-value">70%</span>
+                        </div>
+                        <div class="octave-control">
+                            <span class="octave-label">八度</span>
+                            <select id="octave-noise" class="octave-select">
+                                <option value="-2">-2</option>
+                                <option value="-1">-1</option>
+                                <option value="0" selected>0</option>
+                                <option value="1">+1</option>
+                                <option value="2">+2</option>
+                            </select>
+                        </div>
+                        <div class="instrument-volume-control">
+                            <span class="instrument-volume-label">音量</span>
+                            <input type="range" id="instrument-volume-noise" class="instrument-volume-slider" min="0" max="100" value="100">
+                            <span class="instrument-volume-value" id="instrument-volume-noise-value">100%</span>
+                        </div>
+                    </div>
+                    <div class="instrument-item">
+                        <span class="instrument-name">DMC</span>
+                        <select id="instrument-dmc" class="instrument-select">
+                            <option value="nes" selected>NES原声</option>
+                            <option value="dmc_flute">长笛</option>
+                            <option value="dmc_piano">钢琴</option>
+                            <option value="dmc_trumpet">小号</option>
+                            <option value="dmc_saxophone">萨克斯</option>
+                            <option value="dmc_snare">军鼓</option>
+                            <option value="dmc_dongxiao">洞箫</option>
+                            <option value="dmc_guzheng">古筝</option>
+                            <option value="dmc_suona">唢呐</option>
+                            <option value="dmc_erhu">二胡</option>
+                            <option value="dmc_daluo">大锣</option>
+                            <option value="dmc_shakuhachi">尺八</option>
+                            <option value="dmc_koto">十三弦筝</option>
+                            <option value="dmc_shamisen">津轻三味线</option>
+                            <option value="dmc_biwa">萨摩琵琶</option>
+                            <option value="dmc_taiko">太鼓</option>
+                        </select>
+                        <select id="waveform-dmc" class="waveform-select">
+                            <option value="default" selected>默认波形</option>
+                            <option value="sine">正弦波 - 干净温柔</option>
+                            <option value="triangle">三角波 - 可爱轻快</option>
+                            <option value="square">方波 - 复古游戏</option>
+                            <option value="sawtooth">锯齿波 - 激情饱满</option>
+                            <option value="noise">噪声 - 鼓/特效</option>
+                        </select>
+                        <label class="mix-checkbox-label">
+                            <input type="checkbox" id="mix-dmc" class="mix-checkbox">
+                            <span>混合</span>
+                        </label>
+                        <div class="mix-volume-control" id="mix-volume-dmc-container">
+                            <span class="mix-volume-label">NES比例</span>
+                            <input type="range" id="mix-volume-dmc" class="mix-volume-slider" min="0" max="100" value="70">
+                            <span class="mix-volume-value" id="mix-volume-dmc-value">70%</span>
+                        </div>
+                        <div class="octave-control">
+                            <span class="octave-label">八度</span>
+                            <select id="octave-dmc" class="octave-select">
+                                <option value="-2">-2</option>
+                                <option value="-1">-1</option>
+                                <option value="0" selected>0</option>
+                                <option value="1">+1</option>
+                                <option value="2">+2</option>
+                            </select>
+                        </div>
+                        <div class="instrument-volume-control">
+                            <span class="instrument-volume-label">音量</span>
+                            <input type="range" id="instrument-volume-dmc" class="instrument-volume-slider" min="0" max="100" value="100">
+                            <span class="instrument-volume-value" id="instrument-volume-dmc-value">100%</span>
+                        </div>
                     </div>
                 </div>
             </div>
-        </section>
+        </div>
+    </div>
 
-        <section id="contact" class="contact">
-            <div class="container">
-                <h2>联系方式</h2>
-                <p>Email: example@email.com</p>
-                <div class="social-links">
-                    <a href="#" class="social-link">GitHub</a>
-                    <a href="#" class="social-link">Twitter</a>
-                    <a href="#" class="social-link">LinkedIn</a>
-                </div>
-            </div>
-        </section>
-    </main>
-
-    <footer>
-        <p>&copy; 2026 MySite. All rights reserved.</p>
-    </footer>
-
-    <script src="script.js"></script>
-    <script>
-        // 注册 Service Worker
-        if ('serviceWorker' in navigator) {
-            window.addEventListener('load', () => {
-                navigator.serviceWorker.register('service-worker.js')
-                    .then((registration) => {
-                        console.log('Service Worker 注册成功:', registration);
-                    })
-                    .catch((error) => {
-                        console.log('Service Worker 注册失败:', error);
-                    });
-            });
-        }
-    </script>
+    <script src="bundle.js"></script>
 </body>
 </html>
